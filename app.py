@@ -25,6 +25,11 @@ def query_accelerometer_data(range_minutes=60):
     if result.empty:
         return pd.DataFrame()
 
+    # Renombrar y calcular magnitud
+    result = result.rename(columns={"_time": "time"})
+    result["accel_magnitude"] = np.sqrt(result["ax"]**2 + result["ay"]**2 + result["az"]**2)
+    result["time"] = pd.to_datetime(result["time"])
+    return result[["time", "accel_magnitude"]]
 
 # Función para consultar datos del giroscopio (gx, gy, gz)
 def query_gyroscope_data(range_minutes=60):
@@ -46,12 +51,6 @@ def query_gyroscope_data(range_minutes=60):
     result = result.rename(columns={"_time": "time"})
     result["time"] = pd.to_datetime(result["time"])
     return result[["time", "gx", "gy", "gz"]]
-
-    # Renombrar y calcular magnitud
-    result = result.rename(columns={"_time": "time"})
-    result["accel_magnitude"] = np.sqrt(result["ax"]**2 + result["ay"]**2 + result["az"]**2)
-    result["time"] = pd.to_datetime(result["time"])
-    return result[["time", "accel_magnitude"]]
 
 # Consulta simple de un solo campo
 def query_data(measurement, field, range_minutes=60):
@@ -91,7 +90,6 @@ hum_df = query_data("airSensor", "humidity", range_minutes)
 mov_df = query_accelerometer_data(range_minutes)
 gyro_df = query_gyroscope_data(range_minutes)
 
-
 # Visualización
 col1, col2 = st.columns(2)
 
@@ -114,7 +112,8 @@ if not mov_df.empty:
     st.plotly_chart(px.line(mov_df, x="time", y="accel_magnitude", title="Movimiento"), use_container_width=True)
 else:
     st.info("Sin datos de movimiento en este rango.")
-    
+
+# Gráfico de orientación (Giroscopio)
 st.subheader("🌀 Orientación (Giroscopio)")
 if not gyro_df.empty:
     fig = px.line(gyro_df, x="time", y=["gx", "gy", "gz"], title="Orientación (gx, gy, gz)")
