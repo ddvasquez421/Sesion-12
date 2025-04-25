@@ -121,7 +121,7 @@ if not gyro_df.empty:
 else:
     st.info("Sin datos del giroscopio en este rango.")
 
-# Mejorada la animación de la planta con p5.js
+# Mostrar animación de la planta con p5.js
 st.subheader("🌱 Estado de la Planta según la Humedad")
 
 # Obtener el último valor de humedad
@@ -138,9 +138,10 @@ plant_animation = f"""
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
     <script>
         let humidity = {latest_humidity}; // Valor de humedad obtenido
-        let angle = 0;  // Ángulo para el movimiento oscilante
-        let plantHeight = 0;  // Altura inicial de la planta
-        let leafSize = 0;  // Tamaño de las hojas
+        let plantHeight = map(humidity, 0, 100, 100, 300);
+        let leafSize = map(humidity, 0, 100, 30, 80);       
+        let leafAngle = map(humidity, 0, 100, 0, PI / 4);  // Ángulo de las hojas
+        let leafColor = color(34, 139, 34); // Color verde de las hojas
 
         function setup() {{
             createCanvas(400, 400);
@@ -148,30 +149,30 @@ plant_animation = f"""
         }}
 
         function draw() {{
-            background(245, 245, 245);  // Fondo suave
-
-            // Calcular la altura de la planta y el tamaño de las hojas basados en la humedad
-            plantHeight = map(humidity, 0, 100, 80, 250);
-            leafSize = map(humidity, 0, 100, 20, 80);
-
-            // Movimiento oscilante del tallo
-            let sway = sin(angle) * 10;  // Movimiento oscilante
-            angle += 0.05;  // Velocidad de oscilación
+            background(255);
 
             // Dibujar el suelo
             fill(139, 69, 19);
             rect(0, height - 50, width, 50);
 
-            // Tallo (con movimiento oscilante)
-            fill(34, 139, 34);
-            ellipse(width / 2 + sway, height - 50 - plantHeight, 20, plantHeight);
+            // Dibujar el tallo
+            fill(34, 139, 34); // Color verde
+            rect(width / 2 - 10, height - 50 - plantHeight, 20, plantHeight);
 
-            // Hojas (más orgánicas)
-            fill(34, 139, 34);
-            ellipse(width / 2 + sway - leafSize / 2, height - 50 - plantHeight / 2, leafSize, leafSize);
-            ellipse(width / 2 + sway + leafSize / 2, height - 50 - plantHeight / 2, leafSize, leafSize);
+            // Hojas con ángulo de rotación
+            fill(leafColor);
+            push();
+            translate(width / 2 - leafSize / 2, height - 50 - plantHeight / 2);
+            rotate(leafAngle);
+            ellipse(0, 0, leafSize, leafSize);
+            pop();
+            push();
+            translate(width / 2 + leafSize / 2, height - 50 - plantHeight / 2);
+            rotate(-leafAngle);
+            ellipse(0, 0, leafSize, leafSize);
+            pop();
 
-            // Cambiar color dependiendo de la humedad
+            // Cambiar color de la planta dependiendo de la humedad
             if (humidity > 60) {{
                 fill(0, 128, 0);  // Verde oscuro (alta humedad)
             }} else if (humidity > 30) {{
@@ -179,7 +180,7 @@ plant_animation = f"""
             }} else {{
                 fill(169, 169, 169); // Gris (baja humedad)
             }}
-            ellipse(width / 2 + sway, height - 50 - plantHeight / 2, leafSize, leafSize);
+            ellipse(width / 2, height - 50 - plantHeight / 2, leafSize, leafSize);
         }}
     </script>
 </head>
@@ -189,5 +190,5 @@ plant_animation = f"""
 </html>
 """
 
-# Mostrar la animación en la app
+# Mostrar la animación en el app
 st.components.v1.html(plant_animation, height=400)
