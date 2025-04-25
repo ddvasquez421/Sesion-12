@@ -7,6 +7,27 @@ import numpy as np
 # Configuración desde archivo local
 from config import INFLUX_URL, INFLUX_TOKEN, ORG, BUCKET
 
+# Función para consultar datos del giroscopio (gx, gy, gz)
+def query_gyroscope_data(range_minutes=60):
+    client = InfluxDBClient(url=INFLUX_URL, token=INFLUX_TOKEN, org=ORG)
+    query_api = client.query_api()
+
+    query = f'''
+    from(bucket: "{BUCKET}")
+      |> range(start: -{range_minutes}m)
+      |> filter(fn: (r) => r["_measurement"] == "gyroscope" and (r["_field"] == "gx" or r["_field"] == "gy" or r["_field"] == "gz"))
+      |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
+      |> sort(columns: ["_time"])
+    '''
+
+    result = query_api.query_data_frame(query)
+    if result.empty:
+        return pd.DataFrame()
+
+    result = result.rename(columns={"_time": "time"})
+    result["time"] = pd.to_datetime(result["time"])
+    return result[["time", "gx", "gy", "gz"]]
+
 # Función para consultar múltiples campos de un mismo measurement
 def query_accelerometer_data(range_minutes=60):
     client = InfluxDBClient(url=INFLUX_URL, token=INFLUX_TOKEN, org=ORG)
@@ -30,27 +51,6 @@ def query_accelerometer_data(range_minutes=60):
     result["accel_magnitude"] = np.sqrt(result["ax"]**2 + result["ay"]**2 + result["az"]**2)
     result["time"] = pd.to_datetime(result["time"])
     return result[["time", "accel_magnitude"]]
-
-# Función para consultar datos del giroscopio (gx, gy, gz)
-def query_gyroscope_data(range_minutes=60):
-    client = InfluxDBClient(url=INFLUX_URL, token=INFLUX_TOKEN, org=ORG)
-    query_api = client.query_api()
-
-    query = f'''
-    from(bucket: "{BUCKET}")
-      |> range(start: -{range_minutes}m)
-      |> filter(fn: (r) => r["_measurement"] == "gyroscope" and (r["_field"] == "gx" or r["_field"] == "gy" or r["_field"] == "gz"))
-      |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
-      |> sort(columns: ["_time"])
-    '''
-
-    result = query_api.query_data_frame(query)
-    if result.empty:
-        return pd.DataFrame()
-
-    result = result.rename(columns={"_time": "time"})
-    result["time"] = pd.to_datetime(result["time"])
-    return result[["time", "gx", "gy", "gz"]]
 
 # Consulta simple de un solo campo
 def query_data(measurement, field, range_minutes=60):
@@ -191,4 +191,4 @@ plant_animation = f"""
 """
 
 # Mostrar la animación en el app
-st.components.v1.html(plant_animation, height=400)
+st.components.v1.html(plant_animation, height=500, width=500)
