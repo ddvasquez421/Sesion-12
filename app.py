@@ -138,6 +138,9 @@ plant_animation = f"""
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
     <script>
         let humidity = {latest_humidity}; // Valor de humedad obtenido
+        let angle = 0;  // Ángulo para el movimiento oscilante
+        let plantHeight = 0;  // Altura inicial de la planta
+        let leafSize = 0;  // Tamaño de las hojas
 
         function setup() {{
             createCanvas(400, 400);
@@ -147,22 +150,26 @@ plant_animation = f"""
         function draw() {{
             background(245, 245, 245);  // Fondo suave
 
+            // Calcular la altura de la planta y el tamaño de las hojas basados en la humedad
+            plantHeight = map(humidity, 0, 100, 80, 250);
+            leafSize = map(humidity, 0, 100, 20, 80);
+
+            // Movimiento oscilante del tallo
+            let sway = sin(angle) * 10;  // Movimiento oscilante
+            angle += 0.05;  // Velocidad de oscilación
+
             // Dibujar el suelo
             fill(139, 69, 19);
             rect(0, height - 50, width, 50);
 
-            // Dibujar la planta
-            let plantHeight = map(humidity, 0, 100, 80, 250);  // Ajusta la altura según la humedad
-            let leafSize = map(humidity, 0, 100, 20, 80);       // Ajusta el tamaño de las hojas
-
-            // Tallo (más suave)
-            fill(34, 139, 34); // Color verde
-            ellipse(width / 2, height - 50 - plantHeight, 20, plantHeight);
+            // Tallo (con movimiento oscilante)
+            fill(34, 139, 34);
+            ellipse(width / 2 + sway, height - 50 - plantHeight, 20, plantHeight);
 
             // Hojas (más orgánicas)
             fill(34, 139, 34);
-            ellipse(width / 2 - leafSize / 2, height - 50 - plantHeight / 2, leafSize, leafSize);
-            ellipse(width / 2 + leafSize / 2, height - 50 - plantHeight / 2, leafSize, leafSize);
+            ellipse(width / 2 + sway - leafSize / 2, height - 50 - plantHeight / 2, leafSize, leafSize);
+            ellipse(width / 2 + sway + leafSize / 2, height - 50 - plantHeight / 2, leafSize, leafSize);
 
             // Cambiar color dependiendo de la humedad
             if (humidity > 60) {{
@@ -172,7 +179,7 @@ plant_animation = f"""
             }} else {{
                 fill(169, 169, 169); // Gris (baja humedad)
             }}
-            ellipse(width / 2, height - 50 - plantHeight / 2, leafSize, leafSize);
+            ellipse(width / 2 + sway, height - 50 - plantHeight / 2, leafSize, leafSize);
         }}
     </script>
 </head>
