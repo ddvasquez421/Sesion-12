@@ -120,3 +120,67 @@ if not gyro_df.empty:
     st.plotly_chart(fig, use_container_width=True)
 else:
     st.info("Sin datos del giroscopio en este rango.")
+
+# Mostrar animación de la planta con p5.js
+st.subheader("🌱 Estado de la Planta según la Humedad")
+
+# Obtener el último valor de humedad
+latest_humidity = hum_df["humidity"].iloc[-1] if not hum_df.empty else 0
+
+# Incluir animación HTML con p5.js
+plant_animation = f"""
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Planta Interactiva</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
+    <script>
+        let humidity = {latest_humidity}; // Valor de humedad obtenido
+
+        function setup() {{
+            createCanvas(400, 400);
+            noStroke();
+        }}
+
+        function draw() {{
+            background(255);
+
+            // Dibujar el suelo
+            fill(139, 69, 19);
+            rect(0, height - 50, width, 50);
+
+            // Dibujar la planta
+            let plantHeight = map(humidity, 0, 100, 100, 300);  // Ajusta la altura según la humedad
+            let leafSize = map(humidity, 0, 100, 10, 60);       // Ajusta el tamaño de las hojas
+
+            // Tallo
+            fill(34, 139, 34); // Color verde
+            rect(width / 2 - 10, height - 50 - plantHeight, 20, plantHeight);
+
+            // Hojas
+            fill(34, 139, 34);
+            ellipse(width / 2 - leafSize / 2, height - 50 - plantHeight / 2, leafSize, leafSize);
+            ellipse(width / 2 + leafSize / 2, height - 50 - plantHeight / 2, leafSize, leafSize);
+
+            // Cambiar color dependiendo de la humedad
+            if (humidity > 60) {{
+                fill(0, 128, 0);  // Verde oscuro (alta humedad)
+            }} else if (humidity > 30) {{
+                fill(85, 107, 47); // Verde oliva (media humedad)
+            }} else {{
+                fill(169, 169, 169); // Gris (baja humedad)
+            }}
+            ellipse(width / 2, height - 50 - plantHeight / 2, leafSize, leafSize);
+        }}
+    </script>
+</head>
+<body>
+    <div id="sketch-holder"></div>
+</body>
+</html>
+"""
+
+# Mostrar la animación en el app
+st.components.v1.html(plant_animation, height=400)
