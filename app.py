@@ -121,7 +121,7 @@ if not gyro_df.empty:
 else:
     st.info("Sin datos del giroscopio en este rango.")
 
-# Mostrar animación de la planta con p5.js
+# Mejorada la animación de la planta con p5.js
 st.subheader("🌱 Estado de la Planta según la Humedad")
 
 # Obtener el último valor de humedad
@@ -145,21 +145,21 @@ plant_animation = f"""
         }}
 
         function draw() {{
-            background(255);
+            background(245, 245, 245);  // Fondo suave
 
             // Dibujar el suelo
             fill(139, 69, 19);
             rect(0, height - 50, width, 50);
 
             // Dibujar la planta
-            let plantHeight = map(humidity, 0, 100, 100, 300);  // Ajusta la altura según la humedad
-            let leafSize = map(humidity, 0, 100, 10, 60);       // Ajusta el tamaño de las hojas
+            let plantHeight = map(humidity, 0, 100, 80, 250);  // Ajusta la altura según la humedad
+            let leafSize = map(humidity, 0, 100, 20, 80);       // Ajusta el tamaño de las hojas
 
-            // Tallo
+            // Tallo (más suave)
             fill(34, 139, 34); // Color verde
-            rect(width / 2 - 10, height - 50 - plantHeight, 20, plantHeight);
+            ellipse(width / 2, height - 50 - plantHeight, 20, plantHeight);
 
-            // Hojas
+            // Hojas (más orgánicas)
             fill(34, 139, 34);
             ellipse(width / 2 - leafSize / 2, height - 50 - plantHeight / 2, leafSize, leafSize);
             ellipse(width / 2 + leafSize / 2, height - 50 - plantHeight / 2, leafSize, leafSize);
@@ -182,5 +182,5 @@ plant_animation = f"""
 </html>
 """
 
-# Mostrar la animación en el app
+# Mostrar la animación en la app
 st.components.v1.html(plant_animation, height=400)
